@@ -1,26 +1,18 @@
-import pdf2image
 import pytesseract
+from PIL import Image
 
-# Load PDF page 3
-pdf_file = 'document.pdf'
-page_number = 3
-page_image = pdf2image.convert_from_path(pdf_file, first_page=page_number, last_page=page_number)[0]
+# Load image
+img = Image.open('image.jpg')
 
-# Extract text from page image
-page_text = pytesseract.image_to_string(page_image, lang='eng')
+# Define the region containing the date (top left corner)
+x = 0
+y = 0
+width = 200
+height = 50
+date_region = (x, y, x+width, y+height)
 
-# Find the date in the text
-date = None
-for word in page_text.split():
-    if word.endswith(('th', 'st', 'nd', 'rd')):
-        try:
-            date = datetime.strptime(word, '%d%b%Y')
-            break
-        except ValueError:
-            pass
+# Extract the date text from the region
+date_text = pytesseract.image_to_string(img.crop(date_region), lang='eng', config='--psm 6')
 
-# Print the date
-if date is not None:
-    print('Found date:', date.strftime('%Y-%m-%d'))
-else:
-    print('Date not found.')
+# Print the extracted date text
+print(date_text)
