@@ -1,8 +1,8 @@
 import re
 
-text = "dsjcnwoeichweoicjweiocfjw\nPOLICY NUMBER : AAA-BBBB-CCCC-DDDD\ndlkcnwkocn"
+text = "dsjcnwoeichweoicjweiocfjw\nPOLICY NUMBER : ABC123-CDF567YH-HY1234\ndlkcnwkocn"
 
-pattern = r"(?<=POLICY NUMBER : )([A-Z]{3}-[A-Z]{4}-[A-Z]{4}-[A-Z]{4})"
+pattern = r"(?<=POLICY NUMBER : )([A-Z0-9\-]+)"
 match = re.search(pattern, text)
 
 if match:
