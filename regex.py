@@ -24,12 +24,15 @@ if __name__ == '__main__':
         # Read the CSV file
         df = pd.read_csv(file_path)
 
+        # Split the DataFrame into chunks
+        chunks = np.array_split(df, num_processes)
+
         # Create a process pool
         with Pool(processes=num_processes) as pool:
-            # Process each row in parallel
-            results = pool.map(check_file_exists, df['FilePath'])
+            # Process each chunk in parallel
+            results = pool.map(check_file_exists, [chunk['FilePath'] for chunk in chunks])
 
-        # Add the results as a new column in the DataFrame
-        df['Exists'] = results
+        # Concatenate the results and add as a new column in the DataFrame
+        df['Exists'] = pd.concat(results)
 
         # Continue processing the dataframe with the existence status
