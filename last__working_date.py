@@ -1,11 +1,10 @@
 import os
 import csv
-import pandas as pd
 
 folder_path = '/path/to/folder'  # Replace with the actual folder path
+specific_table_name = 'YourSpecificTableName'  # Replace with the table name you want to search for
 
-table_names = set()  # To store unique table names
-table_values = {}    # To store corresponding values for each table name
+matching_files = []  # To store the names of CSV files containing the specific table name
 
 # Iterate through each CSV file in the folder
 for file_name in os.listdir(folder_path):
@@ -15,21 +14,19 @@ for file_name in os.listdir(folder_path):
         # Read the CSV file
         with open(file_path, 'r', encoding='utf-8', errors='ignore') as csv_file:
             reader = csv.DictReader(csv_file)
+            
+            # Check each row for the specific table name
             for row in reader:
-                table_name = row['tablename']
-                value = row['corresponding_value']
+                table_name = row['table name']
                 
-                # Add table name to the set of unique table names
-                if value is not None and value != '':
-                    table_names.add(table_name)
-                    
-                    # Store corresponding value for the table name
-                    if table_name not in table_values:
-                        table_values[table_name] = value
+                if table_name == specific_table_name:
+                    matching_files.append(file_name)
+                    break  # Exit the loop since the table name is found in this file
 
-# Create a dataframe from the unique table names and corresponding values
-data = {'Table Name': list(table_names), 'Corresponding Value': [table_values[table_name] for table_name in table_names]}
-df = pd.DataFrame(data)
-
-# Print the dataframe
-print(df)
+# Print the names of CSV files containing the specific table name
+if matching_files:
+    print(f"The table name '{specific_table_name}' is present in the following CSV file(s):")
+    for file_name in matching_files:
+        print(file_name)
+else:
+    print(f"The table name '{specific_table_name}' is not found in any of the CSV files.")
