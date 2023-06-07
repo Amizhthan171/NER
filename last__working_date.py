@@ -1,10 +1,11 @@
 import os
 import csv
+import pandas as pd
 
 folder_path = '/path/to/folder'  # Replace with the actual folder path
-key_to_find = 'keyA'
 
-found = False  # Flag to indicate if the key is found
+table_names = set()  # To store unique table names
+table_values = {}    # To store corresponding values for each table name
 
 # Iterate through each CSV file in the folder
 for file_name in os.listdir(folder_path):
@@ -15,19 +16,20 @@ for file_name in os.listdir(folder_path):
         with open(file_path, 'r', encoding='utf-8', errors='ignore') as csv_file:
             reader = csv.DictReader(csv_file)
             for row in reader:
-                key_value = row['key_column']
-                unique_number = row['uniquenumber']
+                table_name = row['tablename']
+                value = row['corresponding_value']
                 
-                # Check if the key matches
-                if key_value == key_to_find:
-                    found = True
+                # Add table name to the set of unique table names
+                if value is not None and value != '':
+                    table_names.add(table_name)
                     
-                    # Check if there is a corresponding value in the 'uniquenumber' column
-                    if unique_number:
-                        print(f"Found corresponding value '{unique_number}' for key '{key_to_find}' in file '{file_name}'")
-                    else:
-                        print(f"No corresponding value found for key '{key_to_find}' in file '{file_name}'")
+                    # Store corresponding value for the table name
+                    if table_name not in table_values:
+                        table_values[table_name] = value
 
-# If the key is not found in any of the CSV files
-if not found:
-    print(f"Key '{key_to_find}' not found in any of the CSV files.")
+# Create a dataframe from the unique table names and corresponding values
+data = {'Table Name': list(table_names), 'Corresponding Value': [table_values[table_name] for table_name in table_names]}
+df = pd.DataFrame(data)
+
+# Print the dataframe
+print(df)
