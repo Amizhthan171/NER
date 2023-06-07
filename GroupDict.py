@@ -19,11 +19,12 @@ for file_name in os.listdir(folder_path):
                 value = row['corresponding_value']
                 
                 # Add table name to the set of unique table names
-                table_names.add(table_name)
-                
-                # Store corresponding value for the table name
-                if table_name not in table_values:
-                    table_values[table_name] = value
+                if value is not None and value != '':
+                    table_names.add(table_name)
+                    
+                    # Store corresponding value for the table name
+                    if table_name not in table_values:
+                        table_values[table_name] = value
 
 # Print the unique table names and their corresponding values
 for table_name in table_names:
