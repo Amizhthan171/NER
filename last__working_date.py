@@ -1,12 +1,33 @@
-from datetime import date, timedelta
+import os
+import csv
 
-today = date.today()
-weekday = today.weekday()
+folder_path = '/path/to/folder'  # Replace with the actual folder path
+key_to_find = 'keyA'
 
-if weekday == 0:
-    last_working_day = today - timedelta(days=3)
-else:
-    last_working_day = today - timedelta(days=1)
+found = False  # Flag to indicate if the key is found
 
-formatted_date = last_working_day.strftime("%m/%d/%Y")
-print("Last working day:", formatted_date)
+# Iterate through each CSV file in the folder
+for file_name in os.listdir(folder_path):
+    if file_name.endswith('.csv'):
+        file_path = os.path.join(folder_path, file_name)
+        
+        # Read the CSV file
+        with open(file_path, 'r', encoding='utf-8', errors='ignore') as csv_file:
+            reader = csv.DictReader(csv_file)
+            for row in reader:
+                key_value = row['key_column']
+                unique_number = row['uniquenumber']
+                
+                # Check if the key matches
+                if key_value == key_to_find:
+                    found = True
+                    
+                    # Check if there is a corresponding value in the 'uniquenumber' column
+                    if unique_number:
+                        print(f"Found corresponding value '{unique_number}' for key '{key_to_find}' in file '{file_name}'")
+                    else:
+                        print(f"No corresponding value found for key '{key_to_find}' in file '{file_name}'")
+
+# If the key is not found in any of the CSV files
+if not found:
+    print(f"Key '{key_to_find}' not found in any of the CSV files.")
