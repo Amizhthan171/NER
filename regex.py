@@ -17,19 +17,15 @@ if __name__ == '__main__':
     # Number of processes to utilize
     num_processes = 4
 
+    # Combine all CSV files into a single DataFrame
+    combined_df = pd.concat([pd.read_csv(os.path.join(directory, csv_file)) for csv_file in csv_files])
+
     # Create a process pool
     with Pool(processes=num_processes) as pool:
-        results = []
+        # Process each row in parallel
+        results = pool.map(check_file_exists, combined_df['file_path'])
 
-        for csv_file in csv_files:
-            # Construct the full path to each CSV file
-            file_path = os.path.join(directory, csv_file)
+    # Add the results as a new column in the combined DataFrame
+    combined_df['Exists'] = results
 
-            # Read the CSV file
-            df = pd.read_csv(file_path)
-
-            # Process each row in parallel
-            chunk_results = pool.map(check_file_exists, df['file_path'])
-            results.extend(chunk_results)
-
-        # Continue processing the results
+    # Continue processing the combined DataFrame with the existence status
