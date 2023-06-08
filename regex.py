@@ -1,47 +1,26 @@
-import pandas as pd
-import os
-from multiprocessing import Pool
+import pytesseract
+import re
 
-# Function to check file existence
-def check_file_exists(file_path):
-    return os.path.exists(file_path)
+# Assume you have already extracted the desired text using a regex
+extracted_text = "Amount: $1234"
 
-# Main function
-if __name__ == '__main__':
-    # Directory containing the CSV files
-    directory = 'path/to/your/csv/directory'
+# Perform OCR using pytesseract to get the bounding box
+ocr_data = pytesseract.image_to_data(extracted_text, output_type=pytesseract.Output.DICT)
 
-    # Get the list of CSV files in the directory
-    csv_files = [file for file in os.listdir(directory) if file.endswith('.csv')]
+# Find the index of the desired text within the OCR results
+text_index = None
+for i, word in enumerate(ocr_data["text"]):
+    if word == extracted_text:
+        text_index = i
+        break
 
-    # Number of processes to utilize
-    num_processes = 4
-
-    # Combine all CSV files into a single DataFrame
-    combined_df = pd.concat([pd.read_csv(os.path.join(directory, csv_file)) for csv_file in csv_files])
-
-    # Drop the index column if present
-    combined_df.reset_index(drop=True, inplace=True)
-
-    # Convert the file path column to a list
-    file_paths = combined_df['file_path'].tolist()
-
-    # Determine the chunk size
-    chunk_size = len(file_paths) // num_processes
-
-    # Split the file paths into chunks
-    chunks = [file_paths[i:i+chunk_size] for i in range(0, len(file_paths), chunk_size)]
-
-    # Create a process pool
-    with Pool(processes=num_processes) as pool:
-        results = []
-
-        # Process each chunk in parallel
-        for chunk in chunks:
-            chunk_results = pool.map(check_file_exists, chunk)
-            results.extend(chunk_results)
-
-    # Add the results as a new column in the combined DataFrame
-    combined_df['Exists'] = results
-
-    # Continue processing the combined DataFrame with the existence status
+# Retrieve the bounding box coordinates if the text is found
+if text_index is not None:
+    left = ocr_data["left"][text_index]
+    top = ocr_data["top"][text_index]
+    width = ocr_data["width"][text_index]
+    height = ocr_data["height"][text_index]
+    bounding_box = (left, top, left + width, top + height)
+    print("Bounding box:", bounding_box)
+else:
+    print("Text not found in OCR results.")
