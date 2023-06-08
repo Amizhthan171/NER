@@ -1,11 +1,19 @@
 import pytesseract
 import re
+from PIL import Image
+
+# Load the input image
+image_path = "path/to/your/image.jpg"
+image = Image.open(image_path)
+
+# Convert the image to grayscale for better OCR accuracy
+image_gray = image.convert("L")
+
+# Perform OCR using pytesseract on the grayscale image
+ocr_data = pytesseract.image_to_data(image_gray, output_type=pytesseract.Output.DICT)
 
 # Assume you have already extracted the desired text using a regex
 extracted_text = "Amount: $1234"
-
-# Perform OCR using pytesseract to get the bounding box
-ocr_data = pytesseract.image_to_data(extracted_text, output_type=pytesseract.Output.DICT)
 
 # Find the index of the desired text within the OCR results
 text_index = None
