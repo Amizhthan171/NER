@@ -1,5 +1,5 @@
 import os
-import shutil
+import zipfile
 from itertools import groupby
 
 # Assuming you have a DataFrame named 'df' with columns 'file_path' and 'key'
@@ -15,9 +15,9 @@ destination_folder = '/path/to/destination/folder/'
 
 # Iterate over the groups and create zip files
 for key, group in groups:
-    file_paths = [row['file_path'] for _, row in group]
+    file_paths = [row[1]['file_path'] for _, row in group]
     zip_file_path = os.path.join(destination_folder, f'{key}.zip')
     os.makedirs(destination_folder, exist_ok=True)
-    with shutil.ZipFile(zip_file_path, 'w') as zip_file:
+    with zipfile.ZipFile(zip_file_path, 'w', zipfile.ZIP_DEFLATED) as zip_file:
         for file_path in file_paths:
             zip_file.write(file_path, os.path.basename(file_path))
