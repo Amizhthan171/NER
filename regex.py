@@ -1,17 +1,23 @@
-import pytesseract
-import re
+import os
+import shutil
+from itertools import groupby
 
-# Load the input image
-image_path = "path/to/your/image.jpg"
+# Assuming you have a DataFrame named 'df' with columns 'file_path' and 'key'
 
-# Perform OCR using pytesseract and generate hOCR output
-hocr_data = pytesseract.image_to_pdf_or_hocr(image_path, extension='hocr')
+# Sort the DataFrame by the 'key' column
+df_sorted = df.sort_values('key')
 
-# Specify the output file path
-output_file = "path/to/output/file.hocr"
+# Group file paths by key
+groups = groupby(df_sorted.iterrows(), key=lambda x: x[1]['key'])
 
-# Save the hOCR data to a file
-with open(output_file, 'wb') as f:
-    f.write(hocr_data)
+# Specify the destination folder for the zip files
+destination_folder = '/path/to/destination/folder/'
 
-print("hOCR file saved successfully.")
+# Iterate over the groups and create zip files
+for key, group in groups:
+    file_paths = [row[1]['file_path'] for _, row in group]
+    zip_file_path = os.path.join(destination_folder, f'{key}.zip')
+    os.makedirs(destination_folder, exist_ok=True)
+    with shutil.ZipFile(zip_file_path, 'w') as zip_file:
+        for file_path in file_paths:
+            zip_file.write(file_path, os.path.basename(file_path))
