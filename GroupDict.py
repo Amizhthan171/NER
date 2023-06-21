@@ -33,7 +33,7 @@ def zip_files(group):
 pool = multiprocessing.Pool()
 
 # Map the zip_files function to the grouped DataFrame in parallel
-pool.map(zip_files, grouped)
+results = pool.map(zip_files, grouped)
 
 # Close the multiprocessing pool
 pool.close()
@@ -41,3 +41,9 @@ pool.join()
 
 # Write the zipping status DataFrame to a CSV file
 zipping_status_df.to_csv('zipping_status.csv', index=False)
+
+# Log the results to a file
+log_file = open('zipping_log.txt', 'w')
+for result in results:
+    log_file.write(f"{result}\n")
+log_file.close()
