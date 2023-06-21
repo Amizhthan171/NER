@@ -23,8 +23,10 @@ for parent_id, group in grouped:
             # Iterate over the rows in the group
             for _, row in group.iterrows():
                 file_path = row['PATHS']
-                # Add the file to the zip file
-                zipf.write(file_path)
+                # Get the filename without the path
+                filename = os.path.basename(file_path)
+                # Add the file to the zip file with its filename only
+                zipf.write(file_path, arcname=filename)
         # If zipping is successful, record the status as 'success'
         zipping_status_df = zipping_status_df.append({'parent ID': parent_id, 'Zipping Status': 'success'}, ignore_index=True)
     except:
