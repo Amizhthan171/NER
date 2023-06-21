@@ -25,9 +25,9 @@ def zip_files(group):
                 file_path = row['PATHS']
                 filename = os.path.basename(file_path)
                 zipf.write(file_path, arcname=filename)
-        zipping_status_df.loc[len(zipping_status_df)] = {'parent ID': parent_id, 'Zipping Status': 'success'}
+        return {'parent ID': parent_id, 'Zipping Status': 'success'}
     except:
-        zipping_status_df.loc[len(zipping_status_df)] = {'parent ID': parent_id, 'Zipping Status': 'failure'}
+        return {'parent ID': parent_id, 'Zipping Status': 'failure'}
 
 # Create a multiprocessing pool
 pool = multiprocessing.Pool()
@@ -39,11 +39,8 @@ results = pool.map(zip_files, grouped)
 pool.close()
 pool.join()
 
+# Convert the results list to a DataFrame
+zipping_status_df = pd.DataFrame(results)
+
 # Write the zipping status DataFrame to a CSV file
 zipping_status_df.to_csv('zipping_status.csv', index=False)
-
-# Log the results to a file
-log_file = open('zipping_log.txt', 'w')
-for result in results:
-    log_file.write(f"{result}\n")
-log_file.close()
