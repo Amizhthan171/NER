@@ -13,6 +13,6 @@ for key, value in data.items():
     page_no = value_list.pop(0)
     bbox = value_list[:4]
     probability = value_list[-1]
-    df = df.append({'KEY': key, 'VALUE': address, 'BBOX': bbox, 'PAGE NO': page_no, 'PROBABILITY': probability}, ignore_index=True)
+    df = pd.concat([df, pd.DataFrame({'KEY': [key], 'VALUE': [address], 'BBOX': [bbox], 'PAGE NO': [page_no], 'PROBABILITY': [probability]})], ignore_index=True)
 
 print(df)
