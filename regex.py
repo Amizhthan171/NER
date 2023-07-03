@@ -5,13 +5,16 @@ data = {
     'name': ['def', 2, 123, 456, 789, 100, 80]
 }
 
-df = pd.DataFrame(columns=['KEY', 'VALUE', 'BBOX', 'PAGE NO', 'PROBABILITY'])
+rows = []
 
 for key, value in data.items():
     address = value[0]
     bbox = value[2:6]
     page_no = value[1]
     probability = value[6]
-    df = df.append({'KEY': key, 'VALUE': address, 'BBOX': bbox, 'PAGE NO': page_no, 'PROBABILITY': probability}, ignore_index=True)
+    row = {'KEY': key, 'VALUE': address, 'BBOX': bbox, 'PAGE NO': page_no, 'PROBABILITY': probability}
+    rows.append(row)
+
+df = pd.DataFrame(rows)
 
 print(df)
