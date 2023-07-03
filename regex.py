@@ -1,20 +1,20 @@
-import pandas as pd
+from PIL import Image
 
-data = {
-    'address': ['abc', 1, 800, 8000, 800, 800, 90],
-    'name': ['def', 2, 123, 456, 789, 100, 80]
-}
+# Assuming you have the image path
+image_path = "path/to/your/image.jpg"
 
-rows = []
+# Load the image
+image = Image.open(image_path)
 
-for key, value in data.items():
-    address = value[0]
-    bbox = value[2:6]
-    page_no = value[1]
-    probability = value[6]
-    row = {'KEY': key, 'VALUE': address, 'BBOX': bbox, 'PAGE NO': page_no, 'PROBABILITY': probability}
-    rows.append(row)
+# Iterate over the dataframe rows
+for index, row in df.iterrows():
+    # Extract the bounding box values
+    bbox = row['BBOX']
+    x_min, y_min, x_max, y_max = bbox
 
-df = pd.DataFrame(rows)
+    # Crop the image based on the bounding box values
+    cropped_image = image.crop((x_min, y_min, x_max, y_max))
 
-print(df)
+    # Save the cropped image using the key name
+    key_name = row['KEY']
+    cropped_image.save(f"cropped_{key_name}.jpg")
