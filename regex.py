@@ -1,37 +1,17 @@
 import pandas as pd
-import zipfile
-import os
 
-# Read the CSV file into a pandas DataFrame
-df = pd.read_csv('your_file.csv')
+data = {
+    'address': ['abc', 1, 800, 8000, 800, 800, 90],
+    'name': ['def', 2, 123, 456, 789, 100, 80]
+}
 
-# Group the rows by parent ID
-grouped = df.groupby('parent ID')
+df = pd.DataFrame(columns=['KEY', 'VALUE', 'BBOX', 'PAGE NO', 'PROBABILITY'])
 
-# Specify the directory to save the zip files
-save_directory = '/path/to/save/directory/'
+for key, value in data.items():
+    address = value[0]
+    bbox = value[2:6]
+    page_no = value[1]
+    probability = value[6]
+    df = df.append({'KEY': key, 'VALUE': address, 'BBOX': bbox, 'PAGE NO': page_no, 'PROBABILITY': probability}, ignore_index=True)
 
-# Create a new DataFrame to store zipping status
-zipping_status_df = pd.DataFrame(columns=['parent ID', 'Zipping Status'])
-
-# Iterate over each group
-for parent_id, group in grouped:
-    # Create a zip file with the parent ID as the name in the specified directory
-    zip_file_path = os.path.join(save_directory, f'{parent_id}.zip')
-    try:
-        with zipfile.ZipFile(zip_file_path, 'w') as zipf:
-            # Iterate over the rows in the group
-            for _, row in group.iterrows():
-                file_path = row['PATHS']
-                # Get the filename without the path
-                filename = os.path.basename(file_path)
-                # Add the file to the zip file with its filename only
-                zipf.write(file_path, arcname=filename)
-        # If zipping is successful, record the status as 'success'
-        zipping_status_df = zipping_status_df.append({'parent ID': parent_id, 'Zipping Status': 'success'}, ignore_index=True)
-    except:
-        # If zipping fails, record the status as 'failure'
-        zipping_status_df = zipping_status_df.append({'parent ID': parent_id, 'Zipping Status': 'failure'}, ignore_index=True)
-
-# Write the zipping status DataFrame to a CSV file
-zipping_status_df.to_csv('zipping_status.csv', index=False)
+print(df)
