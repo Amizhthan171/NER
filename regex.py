@@ -1,30 +1,28 @@
-import fitz
+from pdf2image import convert_from_path
+from PIL import Image
 
 # Assuming you have the PDF file path
 pdf_path = "path/to/your/file.pdf"
 
-# Open the PDF file
-pdf_file = fitz.open(pdf_path)
+# Convert the PDF to images
+images = convert_from_path(pdf_path)
 
 # Iterate over the dataframe rows
 for index, row in df.iterrows():
     # Extract the page number
     page_no = row['PAGE NO']
 
-    # Get the specific page from the PDF
-    page = pdf_file[page_no]
+    # Get the specific page image
+    page_image = images[page_no]
 
     # Extract the bounding box values
     bbox = row['BBOX']
     x_min, y_min, x_max, y_max = bbox
 
-    # Crop the page based on the bounding box values
-    cropped_page = page.crop((x_min, y_min, x_max, y_max))
+    # Crop the image based on the bounding box values
+    cropped_image = page_image.crop((x_min, y_min, x_max, y_max))
 
-    # Save the cropped page as a new PDF file using the key name
+    # Save the cropped image as a new file using the key name
     key_name = row['KEY']
-    output_path = f"cropped_{key_name}.pdf"
-    cropped_page.save(output_path, garbage=3, deflate=True, clean=True)
-
-# Close the PDF file
-pdf_file.close()
+    output_path = f"cropped_{key_name}.jpg"
+    cropped_image.save(output_path)
