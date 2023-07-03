@@ -5,11 +5,13 @@ data = {
     'name': {'def', 2, 123, 456, 789, 100, 80}
 }
 
-df = pd.DataFrame(data).transpose().reset_index()
-df.columns = ['key', 'value']
+df = pd.DataFrame(columns=['KEY', 'VALUE', 'BBOX', 'PAGE NO', 'PROBABILITY'])
 
-df[['address', 'page_no', 'bbox1', 'bbox2', 'bbox3', 'bbox4', 'probability']] = pd.DataFrame(df['value'].tolist())
-
-df = df.drop(columns=['value'])
+for key, value in data.items():
+    address = value.pop(0)
+    page_no = value.pop(0)
+    bbox = value[:4]
+    probability = value[-1]
+    df = df.append({'KEY': key, 'VALUE': address, 'BBOX': bbox, 'PAGE NO': page_no, 'PROBABILITY': probability}, ignore_index=True)
 
 print(df)
