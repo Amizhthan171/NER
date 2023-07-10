@@ -1,33 +1,19 @@
-from PIL import Image
-import pandas as pd
+policy_number_value = '1234'
+premium_value = '5678'
+coverage_amount_value = '91'
 
-def crop_and_save_images(tiff_path, dataframe):
-    image = Image.open(tiff_path)
+policy_number_bbox = ('1', '2', '3')  # Example bounding box values for policy number
+premium_bbox = ('4', '5', '6')  # Example bounding box values for premium
+coverage_amount_bbox = ('7', '8', '9')  # Example bounding box values for coverage amount
 
-    for index, row in dataframe.iterrows():
-        page_no = row['page no']
-        bbox = row['bbox']
-        field = row['field']
+policy_number_page = 1  # Example page number for policy number
+premium_page = 1  # Example page number for premium
+coverage_amount_page = 2  # Example page number for coverage amount
 
-        # Convert bbox coordinates to integers
-        bbox = [int(coord) for coord in bbox]
+result_dict = {
+    'policy number': [policy_number_value, policy_number_page, *policy_number_bbox, 'NA'],
+    'premium': [premium_value, premium_page, *premium_bbox, 'NA'],
+    'coverage amount': [coverage_amount_value, coverage_amount_page, *coverage_amount_bbox, 'NA']
+}
 
-        # Crop the image using the bbox coordinates
-        image_page = image.copy()
-        image_page.seek(page_no)
-        cropped_image = image_page.crop(bbox)
-
-        # Save the cropped image with the field name as a JPEG
-        save_path = f"{field}.jpg"
-        cropped_image.save(save_path, "JPEG")
-
-# Usage example
-df = pd.DataFrame({
-    'page no': [0, 0, 1, 1],
-    'bbox': [(100, 100, 300, 300), (200, 200, 400, 400), (150, 150, 350, 350), (250, 250, 450, 450)],
-    'field': ['field1', 'field2', 'field3', 'field4']
-})
-
-tiff_file = "example.tiff"
-
-crop_and_save_images(tiff_file, df)
+print(result_dict)
