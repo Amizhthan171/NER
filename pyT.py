@@ -1,33 +1,32 @@
-import PyPDF2
-from pdf2image import convert_from_path
+import fitz  # PyMuPDF
+import pytesseract
 from PIL import Image
 
-def has_images(page_image):
-    # Convert the page_image to grayscale for better analysis (optional but can be helpful)
-    grayscale_image = page_image.convert('L')
+def has_images(pdf_file):
+    pdf_document = fitz.open(pdf_file)
+    for page_num in range(pdf_document.page_count):
+        page = pdf_document.load_page(page_num)
+        images = page.get_images(full=True)
 
-    # Threshold the image to binarize it (optional but can be helpful)
-    threshold_value = 200
-    threshold_image = grayscale_image.point(lambda p: p > threshold_value and 255)
+        for img in images:
+            img_data = page.get_image_data(img[0])
+            img_bytes = img_data["image"]
 
-    # Count the number of non-white pixels in the image
-    num_non_white_pixels = sum(1 for pixel in threshold_image.getdata() if pixel < 255)
+            # Convert the image bytes to a PIL image
+            pil_image = Image.open(img_bytes)
+            text = pytesseract.image_to_string(pil_image)
 
-    # You can adjust the threshold for the number of non-white pixels based on your requirements
-    # Here, we set a simple threshold of 100 non-white pixels to qualify as having an image
-    if num_non_white_pixels > 100:
-        return True
-    else:
-        return False
+            # You can improve the accuracy by analyzing the OCR text or implementing more complex rules
+            if text.strip():
+                return True
+
+    return False
 
 def print_pages_with_images(pdf_file):
-    pdf_reader = PyPDF2.PdfReader(pdf_file)
-
-    for page_num in range(len(pdf_reader.pages)):
-        page_image = convert_from_path(pdf_file, first_page=page_num+1, last_page=page_num+1)[0]
-
-        if has_images(page_image):
-            print(f"Page {page_num + 1} in {pdf_file} contains images.")
+    if has_images(pdf_file):
+        print(f"At least one page in {pdf_file} contains images.")
+    else:
+        print(f"No pages in {pdf_file} contain images.")
 
 # Example usage:
 pdf_files = ["file1.pdf", "file2.pdf", "file3.pdf"]
