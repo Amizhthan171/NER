@@ -1,9 +1,13 @@
 import fitz  # PyMuPDF
 import pytesseract
 from PIL import Image
+import cv2
+import numpy as np
 
 def has_images(pdf_file):
     pdf_document = fitz.open(pdf_file)
+    pages_with_images = []
+
     for page_num in range(pdf_document.page_count):
         page = pdf_document.load_page(page_num)
         images = page.get_images(full=True)
@@ -12,23 +16,29 @@ def has_images(pdf_file):
             xref = img[0]
             image_data = page.get_pixmap(xref=xref)
 
-            pil_image = Image.frombytes("RGB", [image_data.width, image_data.height], image_data.samples)
+            # Convert the image data to a NumPy array for OpenCV processing
+            np_array = np.frombuffer(image_data.samples, dtype=np.uint8).reshape(image_data.height, image_data.width, 3)
 
-            # Convert the PIL image to grayscale for OCR (optional but can be helpful)
-            grayscale_image = pil_image.convert('L')
+            # Convert the BGR image to RGB (OpenCV uses BGR by default)
+            bgr_image = cv2.cvtColor(np_array, cv2.COLOR_BGR2RGB)
+
+            # Convert the image to grayscale for OCR
+            grayscale_image = cv2.cvtColor(bgr_image, cv2.COLOR_RGB2GRAY)
 
             # Perform OCR on the image
-            text = pytesseract.image_to_string(grayscale_image)
+            text = pytesseract.image_to_string(Image.fromarray(grayscale_image))
 
-            # You can improve the accuracy by analyzing the OCR text or implementing more complex rules
+            # Check if the page contains images based on OCR result
             if text.strip():
-                return True
+                pages_with_images.append(page_num + 1)
+                break  # Break the loop if any image is found on the page
 
-    return False
+    return pages_with_images
 
 def print_pages_with_images(pdf_file):
-    if has_images(pdf_file):
-        print(f"At least one page in {pdf_file} contains images.")
+    pages_with_images = has_images(pdf_file)
+    if pages_with_images:
+        print(f"The following page(s) in {pdf_file} contain images: {pages_with_images}.")
     else:
         print(f"No pages in {pdf_file} contain images.")
 
