@@ -9,12 +9,14 @@ def has_images(pdf_file):
         images = page.get_images(full=True)
 
         for img in images:
-            img_data = page.get_image_data(img[0])
-            img_bytes = img_data["image"]
+            image_data = page.get_pixmap(img[0])
+            pil_image = Image.frombytes("RGB", [image_data.width, image_data.height], image_data.samples)
 
-            # Convert the image bytes to a PIL image
-            pil_image = Image.open(img_bytes)
-            text = pytesseract.image_to_string(pil_image)
+            # Convert the PIL image to grayscale for OCR (optional but can be helpful)
+            grayscale_image = pil_image.convert('L')
+
+            # Perform OCR on the image
+            text = pytesseract.image_to_string(grayscale_image)
 
             # You can improve the accuracy by analyzing the OCR text or implementing more complex rules
             if text.strip():
