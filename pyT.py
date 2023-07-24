@@ -1,27 +1,25 @@
-from exchangelib import Account, Credentials
+import PyPDF2
+import fitz  # PyMuPDF
 
-# Set up credentials
-credentials = Credentials(username='your_username', password='your_password')
+def has_images(page):
+    # Implement the has_images function as shown in step 2.
 
-# Connect to the account
-account = Account(primary_smtp_address='your_email@example.com', credentials=credentials, autodiscover=True)
+def print_pages_with_images(pdf_file):
+    pdf_reader = PyPDF2.PdfReader(pdf_file)
 
-# Define the list of sender email addresses to filter
-sender_list = ['sender1@example.com', 'sender2@example.com', 'sender3@example.com']
+    for page_num in range(len(pdf_reader.pages)):
+        page = pdf_reader.pages[page_num]
 
-# Create an empty list to store recipient addresses
-recipient_list = []
+        # Convert the PyPDF2 page to PyMuPDF page
+        pdf_document = fitz.open(pdf_file)
+        mu_page = pdf_document.load_page(page_num)
 
-# Traverse through the inbox and subfolders
-for folder in account.inbox.walk():
-    # Filter emails with sender addresses from the sender_list
-    filtered_emails = folder.filter(sender__in=sender_list)
+        if has_images(mu_page):
+            print(f"Page {page_num + 1} in {pdf_file} contains images.")
 
-    # Traverse through the filtered emails
-    for email in filtered_emails:
-        # Extract recipient addresses and append to the recipient_list
-        for recipient in email.to_recipients:
-            recipient_list.append(recipient.email_address)
+        pdf_document.close()
 
-# Print the recipient_list
-print(recipient_list)
+# Example usage:
+pdf_files = ["file1.pdf", "file2.pdf", "file3.pdf"]
+for pdf_file in pdf_files:
+    print_pages_with_images(pdf_file)
