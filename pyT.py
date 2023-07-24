@@ -9,7 +9,9 @@ def has_images(pdf_file):
         images = page.get_images(full=True)
 
         for img in images:
-            image_data = page.get_pixmap(img[0])
+            xref = img[0]
+            image_data = page.get_pixmap(xref=xref)
+
             pil_image = Image.frombytes("RGB", [image_data.width, image_data.height], image_data.samples)
 
             # Convert the PIL image to grayscale for OCR (optional but can be helpful)
