@@ -1,48 +1,58 @@
-import fitz  # PyMuPDF
-import pytesseract
+import PyPDF4
 from PIL import Image
-import cv2
-import numpy as np
 
-def has_images(pdf_file):
-    pdf_document = fitz.open(pdf_file)
-    pages_with_images = []
+def is_logo_or_text_image(image):
+    # Check if the image contains any text or has high saturation
+    # You can customize the filtering criteria based on your specific use case
+    # For simplicity, we'll use a basic filtering approach here
 
-    for page_num in range(pdf_document.page_count):
-        page = pdf_document.load_page(page_num)
-        images = page.get_images(full=True)
+    # Convert the image to grayscale
+    grayscale_image = image.convert("L")
 
-        for img in images:
-            xref = img[0]
-            image_data = page.get_pixmap(xref=xref)
+    # Calculate the pixel intensity histogram
+    histogram = grayscale_image.histogram()
 
-            # Convert the image data to a NumPy array for OpenCV processing
-            np_array = np.frombuffer(image_data.samples, dtype=np.uint8).reshape(image_data.height, image_data.width, 3)
+    # If more than 95% of the pixels have a low intensity (text-based image)
+    if sum(histogram[:64]) / float(image.size[0] * image.size[1]) > 0.95:
+        return True
 
-            # Convert the BGR image to RGB (OpenCV uses BGR by default)
-            bgr_image = cv2.cvtColor(np_array, cv2.COLOR_BGR2RGB)
+    # If the image has high saturation (logo-based image)
+    saturation = image.convert("HSV").split()[1].histogram()
+    if sum(saturation[-64:]) / float(image.size[0] * image.size[1]) > 0.3:
+        return True
 
-            # Convert the image to grayscale for OCR
-            grayscale_image = cv2.cvtColor(bgr_image, cv2.COLOR_RGB2GRAY)
+    return False
 
-            # Perform OCR on the image
-            text = pytesseract.image_to_string(Image.fromarray(grayscale_image))
+def has_large_images(pdf_file):
+    pages_with_large_images = []
 
-            # Check if the page contains images based on OCR result
-            if text.strip():
-                pages_with_images.append(page_num + 1)
-                break  # Break the loop if any image is found on the page
+    with open(pdf_file, "rb") as file:
+        pdf_reader = PyPDF4.PdfFileReader(file)
 
-    return pages_with_images
+        for page_num in range(pdf_reader.numPages):
+            page = pdf_reader.getPage(page_num)
+            resources = page['/Resources']
+            if '/XObject' in resources:
+                xObject = resources['/XObject']
+                for obj in xObject:
+                    obj_stream = xObject[obj]
+                    if obj_stream['/Subtype'] == '/Image':
+                        image = Image.open(obj_stream.get_object())
+                        width, height = image.size
+                        if width > 600 and height > 460 and not is_logo_or_text_image(image):
+                            pages_with_large_images.append(page_num + 1)
+                            break  # Break the loop if any large suitable image is found on the page
 
-def print_pages_with_images(pdf_file):
-    pages_with_images = has_images(pdf_file)
-    if pages_with_images:
-        print(f"The following page(s) in {pdf_file} contain images: {pages_with_images}.")
+    return pages_with_large_images
+
+def print_pages_with_large_images(pdf_file):
+    pages_with_large_images = has_large_images(pdf_file)
+    if pages_with_large_images:
+        print(f"The following page(s) in {pdf_file} contain large suitable images: {pages_with_large_images}.")
     else:
-        print(f"No pages in {pdf_file} contain images.")
+        print(f"No pages in {pdf_file} contain large suitable images.")
 
 # Example usage:
 pdf_files = ["file1.pdf", "file2.pdf", "file3.pdf"]
 for pdf_file in pdf_files:
-    print_pages_with_images(pdf_file)
+    print_pages_with_large_images(pdf_file)
