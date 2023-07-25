@@ -8,8 +8,8 @@ def has_large_images(pdf_file):
         page = pdf_document.load_page(page_num)
         images = page.get_images(full=True)
 
-        for img in images:
-            image_width, image_height = images[img]["width"], images[img]["height"]
+        for _, image_info in images.items():
+            image_width, image_height = image_info[0], image_info[1]
             if image_width > 600 and image_height > 460:
                 pages_with_large_images.append(page_num + 1)
                 break  # Break the loop if any large image is found on the page
