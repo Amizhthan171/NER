@@ -2,6 +2,7 @@ from pdf2image import convert_from_path
 from PIL import Image
 import pytesseract
 import cv2
+import numpy as np
 
 def is_logo_or_text_image(image):
     # Convert the image to grayscale
@@ -12,35 +13,33 @@ def is_logo_or_text_image(image):
     if text.strip():
         return True
 
-    # Check if the image has high saturation (logo-based image)
-    image_cv2 = cv2.cvtColor(cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR), cv2.COLOR_BGR2HSV)
-    saturation = image_cv2[..., 1]
-    saturation_mean = saturation.mean()
-    if saturation_mean > 150:  # You can adjust the threshold value based on your needs
+    # Convert the image to numpy array
+    image_np = np.array(image)
+
+    # Convert the image to HSV color space
+    hsv_image = cv2.cvtColor(image_np, cv2.COLOR_RGB2HSV)
+
+    # Define color range for logos (you may need to adjust these values based on your logos)
+    lower_red = np.array([0, 100, 100])
+    upper_red = np.array([10, 255, 255])
+
+    lower_blue = np.array([100, 100, 100])
+    upper_blue = np.array([140, 255, 255])
+
+    # Create masks for red and blue colors
+    red_mask = cv2.inRange(hsv_image, lower_red, upper_red)
+    blue_mask = cv2.inRange(hsv_image, lower_blue, upper_blue)
+
+    # Combine the masks to detect red and blue colors in the image (logos are often red or blue)
+    logo_mask = red_mask + blue_mask
+
+    # Count the number of non-zero pixels in the logo mask
+    num_logo_pixels = np.count_nonzero(logo_mask)
+
+    # If a significant number of pixels are detected as logos, consider it a logo-based image
+    if num_logo_pixels > 0.1 * image_np.size:
         return True
 
     return False
 
-def has_large_images(pdf_file):
-    pages_with_large_images = []
-
-    images = convert_from_path(pdf_file, dpi=300)  # Convert PDF pages to images
-
-    for page_num, image in enumerate(images):
-        width, height = image.size
-        if width > 600 and height > 460 and not is_logo_or_text_image(image):
-            pages_with_large_images.append(page_num + 1)
-
-    return pages_with_large_images
-
-def print_pages_with_large_images(pdf_file):
-    pages_with_large_images = has_large_images(pdf_file)
-    if pages_with_large_images:
-        print(f"The following page(s) in {pdf_file} contain large suitable images: {pages_with_large_images}.")
-    else:
-        print(f"No pages in {pdf_file} contain large suitable images.")
-
-# Example usage:
-pdf_files = ["file1.pdf", "file2.pdf", "file3.pdf"]
-for pdf_file in pdf_files:
-    print_pages_with_large_images(pdf_file)
+# Rest of the code remains the same
