@@ -17,6 +17,7 @@ def has_images(pdf_file):
                 pages_with_images.append(page_num + 1)
                 break  # Break the loop if any colored image is found on the page
 
+    pdf_document.close()
     return pages_with_images
 
 def print_pages_with_images(pdf_file):
