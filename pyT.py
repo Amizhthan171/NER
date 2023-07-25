@@ -1,34 +1,35 @@
-import PyPDF4
+from pdf2image import convert_from_path
 from PIL import Image
+import pytesseract
+import cv2
 
 def is_logo_or_text_image(image):
-    # Same filtering criteria as before
-    # ...
+    # Convert the image to grayscale
+    grayscale_image = image.convert("L")
+
+    # Check if the image contains any text using OCR (Tesseract)
+    text = pytesseract.image_to_string(grayscale_image)
+    if text.strip():
+        return True
+
+    # Check if the image has high saturation (logo-based image)
+    image_cv2 = cv2.cvtColor(cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR), cv2.COLOR_BGR2HSV)
+    saturation = image_cv2[..., 1]
+    saturation_mean = saturation.mean()
+    if saturation_mean > 150:  # You can adjust the threshold value based on your needs
+        return True
+
+    return False
 
 def has_large_images(pdf_file):
     pages_with_large_images = []
 
-    with open(pdf_file, "rb") as file:
-        pdf_reader = PyPDF4.PdfFileReader(file)
+    images = convert_from_path(pdf_file, dpi=300)  # Convert PDF pages to images
 
-        for page_num in range(pdf_reader.numPages):
-            page = pdf_reader.getPage(page_num)
-            resources = page['/Resources']
-            if '/XObject' in resources:
-                xObject = resources['/XObject']
-                for obj in xObject:
-                    obj_stream = xObject[obj]
-                    if obj_stream['/Subtype'] == '/Image':
-                        if isinstance(obj_stream, PyPDF4.generic.EncodedStreamObject):
-                            data = obj_stream.get_object().get_data()
-                        else:
-                            data = obj_stream.get_data()
-
-                        image = Image.open(io.BytesIO(data))
-                        width, height = image.size
-                        if width > 600 and height > 460 and not is_logo_or_text_image(image):
-                            pages_with_large_images.append(page_num + 1)
-                            break  # Break the loop if any large suitable image is found on the page
+    for page_num, image in enumerate(images):
+        width, height = image.size
+        if width > 600 and height > 460 and not is_logo_or_text_image(image):
+            pages_with_large_images.append(page_num + 1)
 
     return pages_with_large_images
 
