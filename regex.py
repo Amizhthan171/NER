@@ -1,11 +1,11 @@
-import PyPDF2
+import PyPDF4
 from PIL import Image
 
 def has_large_images(pdf_file):
     pages_with_large_images = []
 
     with open(pdf_file, "rb") as file:
-        pdf_reader = PyPDF2.PdfFileReader(file)
+        pdf_reader = PyPDF4.PdfFileReader(file)
 
         for page_num in range(pdf_reader.numPages):
             page = pdf_reader.getPage(page_num)
