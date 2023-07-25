@@ -1,28 +1,50 @@
-from pdf2image import convert_from_path
-from PIL import Image
+import fitz  # PyMuPDF
+import cv2
 
-# Assuming you have the PDF file path
-pdf_path = "path/to/your/file.pdf"
+def has_images(pdf_file):
+    pdf_document = fitz.open(pdf_file)
+    pages_with_images = []
 
-# Convert the PDF to images
-images = convert_from_path(pdf_path)
+    for page_num in range(pdf_document.page_count):
+        page = pdf_document.load_page(page_num)
+        images = page.get_images(full=True)
 
-# Iterate over the dataframe rows
-for index, row in df.iterrows():
-    # Extract the page number
-    page_no = row['PAGE NO']
+        for img in images:
+            xref = img[0]
+            image_data = page.get_pixmap(xref=xref)
 
-    # Get the specific page image
-    page_image = images[page_no]
+            # Convert the image data to a NumPy array for OpenCV processing
+            np_array = bytearray(image_data.samples)
+            image_np = np.array(np_array, dtype=np.uint8).reshape(image_data.height, image_data.width, 3)
 
-    # Extract the bounding box values
-    bbox = row['BBOX']
-    x_min, y_min, x_max, y_max = bbox
+            # Convert the BGR image to RGB (OpenCV uses BGR by default)
+            rgb_image = cv2.cvtColor(image_np, cv2.COLOR_BGR2RGB)
 
-    # Crop the image based on the bounding box values
-    cropped_image = page_image.crop((x_min, y_min, x_max, y_max))
+            # Convert the image to grayscale
+            grayscale_image = cv2.cvtColor(rgb_image, cv2.COLOR_RGB2GRAY)
 
-    # Save the cropped image as a new file using the key name
-    key_name = row['KEY']
-    output_path = f"cropped_{key_name}.jpg"
-    cropped_image.save(output_path)
+            # Perform image processing to detect regions that likely contain images
+            # You can adjust the parameters based on your PDFs' characteristics
+            _, threshold_image = cv2.threshold(grayscale_image, 200, 255, cv2.THRESH_BINARY)
+
+            # Find contours in the thresholded image
+            contours, _ = cv2.findContours(threshold_image, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+            # If any contours are found, consider the page to contain images
+            if len(contours) > 0:
+                pages_with_images.append(page_num + 1)
+                break  # Break the loop if any image is found on the page
+
+    return pages_with_images
+
+def print_pages_with_images(pdf_file):
+    pages_with_images = has_images(pdf_file)
+    if pages_with_images:
+        print(f"The following page(s) in {pdf_file} contain images: {pages_with_images}.")
+    else:
+        print(f"No pages in {pdf_file} contain images.")
+
+# Example usage:
+pdf_files = ["file1.pdf", "file2.pdf", "file3.pdf"]
+for pdf_file in pdf_files:
+    print_pages_with_images(pdf_file)
