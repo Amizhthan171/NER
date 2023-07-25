@@ -11,11 +11,12 @@ def has_large_images(pdf_file):
             page = pdf_reader.getPage(page_num)
             resources = page['/Resources']
             if '/XObject' in resources:
-                xObject = resources['/XObject'].get_object()
+                xObject = resources['/XObject']
                 for obj in xObject:
-                    if xObject[obj]['/Subtype'] == '/Image':
-                        width = xObject[obj]['/Width']
-                        height = xObject[obj]['/Height']
+                    obj_stream = xObject[obj]
+                    if obj_stream['/Subtype'] == '/Image':
+                        width = obj_stream['/Width']
+                        height = obj_stream['/Height']
                         if width > 600 and height > 460:
                             pages_with_large_images.append(page_num + 1)
                             break  # Break the loop if any large image is found on the page
