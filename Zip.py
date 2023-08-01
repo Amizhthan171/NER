@@ -20,8 +20,10 @@ def has_images(page, threshold=100):
 
     for image in image_list:
         xref = image[0]
-        pix = fitz.Pixmap(page, xref)
-        img = Image.open(io.BytesIO(pix.samples))
+        base_image = page.get_image(xref)
+        image_bytes = base_image.samples
+
+        img = Image.open(io.BytesIO(image_bytes))
 
         black_pixels, white_pixels = count_black_white_pixels(img)
         if black_pixels + white_pixels > threshold:
@@ -34,7 +36,7 @@ def find_pages_with_images(pdf_file):
 
     pages_with_images = []
     for page_num in range(pdf_document.page_count):
-        page = pdf_document.load_page(page_num)
+        page = pdf_document[page_num]
         if has_images(page):
             pages_with_images.append(page_num + 1)
 
