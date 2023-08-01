@@ -15,15 +15,11 @@ def count_black_white_pixels(image):
 
 def has_images(page, threshold=100):
     # Function to check if a page has images based on black and white pixel count.
-    image_list = page.getImageList()
+    pixmap_list = page.get_pixmap_list()
     image_count = 0
 
-    for image in image_list:
-        xref = image[0]
-        base_image = page.get_image(xref)
-        image_bytes = base_image.samples
-
-        img = Image.open(io.BytesIO(image_bytes))
+    for pixmap in pixmap_list:
+        img = Image.frombytes("RGB", (pixmap.width, pixmap.height), pixmap.samples)
 
         black_pixels, white_pixels = count_black_white_pixels(img)
         if black_pixels + white_pixels > threshold:
@@ -36,7 +32,7 @@ def find_pages_with_images(pdf_file):
 
     pages_with_images = []
     for page_num in range(pdf_document.page_count):
-        page = pdf_document[page_num]
+        page = pdf_document.load_page(page_num)
         if has_images(page):
             pages_with_images.append(page_num + 1)
 
