@@ -1,36 +1,46 @@
-import PyPDF4
+import os
 from PIL import Image
+import fitz  # PyMuPDF
 
-def has_large_images(pdf_file):
-    pages_with_large_images = []
+def count_black_white_pixels(image):
+    # Function to count the number of black and white pixels in an image.
+    black_pixels = white_pixels = 0
+    for pixel in image.getdata():
+        if pixel == (0, 0, 0):  # Black pixel
+            black_pixels += 1
+        elif pixel == (255, 255, 255):  # White pixel
+            white_pixels += 1
+    return black_pixels, white_pixels
 
-    with open(pdf_file, "rb") as file:
-        pdf_reader = PyPDF4.PdfFileReader(file)
+def has_images(page, threshold=100):
+    # Function to check if a page has images based on black and white pixel count.
+    image = page.get_pixmap()
+    img = Image.frombytes("RGB", (image.width, image.height), image.samples)
 
-        for page_num in range(pdf_reader.numPages):
-            page = pdf_reader.getPage(page_num)
-            resources = page['/Resources']
-            if '/XObject' in resources:
-                xObject = resources['/XObject']
-                for obj in xObject:
-                    obj_stream = xObject[obj]
-                    if obj_stream['/Subtype'] == '/Image':
-                        width = obj_stream['/Width']
-                        height = obj_stream['/Height']
-                        if width > 600 and height > 460:
-                            pages_with_large_images.append(page_num + 1)
-                            break  # Break the loop if any large image is found on the page
+    black_pixels, white_pixels = count_black_white_pixels(img)
+    return black_pixels + white_pixels > threshold
 
-    return pages_with_large_images
+def find_pages_with_images(pdf_file):
+    pdf_document = fitz.open(pdf_file)
 
-def print_pages_with_large_images(pdf_file):
-    pages_with_large_images = has_large_images(pdf_file)
-    if pages_with_large_images:
-        print(f"The following page(s) in {pdf_file} contain large images: {pages_with_large_images}.")
-    else:
-        print(f"No pages in {pdf_file} contain large images.")
+    pages_with_images = []
+    for page_num in range(pdf_document.page_count):
+        page = pdf_document.load_page(page_num)
+        if has_images(page):
+            pages_with_images.append(page_num + 1)
 
-# Example usage:
-pdf_files = ["file1.pdf", "file2.pdf", "file3.pdf"]
-for pdf_file in pdf_files:
-    print_pages_with_large_images(pdf_file)
+    pdf_document.close()
+    return pages_with_images
+
+def process_directory(directory_path):
+    # Function to process all PDFs in a directory and find pages with images.
+    pdf_files = [f for f in os.listdir(directory_path) if f.endswith(".pdf")]
+
+    for pdf_file in pdf_files:
+        pdf_path = os.path.join(directory_path, pdf_file)
+        pages_with_images = find_pages_with_images(pdf_path)
+        print(f"File: {pdf_file} - Pages with images: {pages_with_images}")
+
+# Replace 'pdf_directory_path' with the path to the directory containing the PDFs.
+pdf_directory_path = "/path/to/your/pdf_directory"
+process_directory(pdf_directory_path)
