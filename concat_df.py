@@ -1,17 +1,14 @@
-import pytesseract
-from PIL import Image
+import tabula
 
-# Perform OCR on the table image to extract the table structure
-def ocr_table(image_path):
-    image = Image.open(image_path)
-    # Use --psm 6 for sparse text with OSD (Page Segmentation Mode)
-    # Use --psm 11 for sparse text
-    extracted_data = pytesseract.image_to_osd(image, config='--psm 6')
-    return extracted_data
+# Replace "path/to/your/table.pdf" with the path to your PDF file
+# Pass the pages parameter to specify the page number(s) with the table(s) you want to extract
+# You can also pass the area parameter to specify the region of the page where the table is located (format: [top, left, bottom, right])
+tables = tabula.read_pdf("path/to/your/table.pdf", pages="all")
 
-# OCR the table image and get the structured table data
-# Replace "path/to/your/table_image.jpg" with the path to your table image file
-table_data = ocr_table("path/to/your/table_image.jpg")
+# Iterate through the extracted tables and display them
+for idx, table_df in enumerate(tables):
+    print(f"Table {idx + 1}:")
+    print(table_df)
+    print("\n")  # Add a newline between tables
 
-# Print the structured table data
-print(table_data)
+# Note:⬤
