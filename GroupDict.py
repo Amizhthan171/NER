@@ -12,14 +12,14 @@ You have a Closing Disclosure document with the following sections on page 2:
 
 For each section, please provide the values for each line in the format:
 <Section Name>:
-- Line X:
+- <Line 1>:
   - Borrower Paid at Closing: <Value>
   - Borrower Paid before Closing: <Value>
   - Seller Paid at Closing: <Value>
   - Seller Paid before Closing: <Value>
   - Paid by Others: <Value>
 
-- Line Y:
+- <Line 2>:
   - Borrower Paid at Closing: <Value>
   - Borrower Paid before Closing: <Value>
   - Seller Paid at Closing: <Value>
@@ -30,14 +30,14 @@ For each section, please provide the values for each line in the format:
 
 Example response format:
 Loan Costs:
-- Line 1:
+- Application Fee:
   - Borrower Paid at Closing: $XXXX
   - Borrower Paid before Closing: $XXXX
   - Seller Paid at Closing: $XXXX
   - Seller Paid before Closing: $XXXX
   - Paid by Others: $XXXX
 
-- Line 2:
+- Underwriting Fee:
   - Borrower Paid at Closing: $XXXX
   - Borrower Paid before Closing: $XXXX
   - Seller Paid at Closing: $XXXX
