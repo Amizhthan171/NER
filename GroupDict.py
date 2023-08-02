@@ -10,9 +10,38 @@ You have a Closing Disclosure document with the following sections on page 2:
 9. Total Other Costs
 10. Total Closing Costs
 
-Please list all the values for each section in the format:
+For each section, please provide the values for each line in the format:
 <Section Name>:
-- Borrower Paid at Closing: <Value>
-- Seller Paid at Closing: <Value>
-- Borrower Paid before Closing: <Value>
-- Seller Paid before Closing: <Value>
+- Line X:
+  - Borrower Paid at Closing: <Value>
+  - Borrower Paid before Closing: <Value>
+  - Seller Paid at Closing: <Value>
+  - Seller Paid before Closing: <Value>
+  - Paid by Others: <Value>
+
+- Line Y:
+  - Borrower Paid at Closing: <Value>
+  - Borrower Paid before Closing: <Value>
+  - Seller Paid at Closing: <Value>
+  - Seller Paid before Closing: <Value>
+  - Paid by Others: <Value>
+
+... (continue listing lines for each section)
+
+Example response format:
+Loan Costs:
+- Line 1:
+  - Borrower Paid at Closing: $XXXX
+  - Borrower Paid before Closing: $XXXX
+  - Seller Paid at Closing: $XXXX
+  - Seller Paid before Closing: $XXXX
+  - Paid by Others: $XXXX
+
+- Line 2:
+  - Borrower Paid at Closing: $XXXX
+  - Borrower Paid before Closing: $XXXX
+  - Seller Paid at Closing: $XXXX
+  - Seller Paid before Closing: $XXXX
+  - Paid by Others: $XXXX
+
+... (continue listing lines for each section)
