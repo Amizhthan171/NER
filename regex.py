@@ -1,5 +1,5 @@
 import multiprocessing
-
+^(?=.*\$)(?=.*[,\.])(?=.*\d).+$
 def worker():
     result_df = ...  # Process your DataFrame and get the result_df
     return result_df
