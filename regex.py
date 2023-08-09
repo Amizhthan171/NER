@@ -1,46 +1,14 @@
-import os
-from PIL import Image
-import fitz  # PyMuPDF
+import re
 
-def count_black_white_pixels(image):
-    # Function to count the number of black and white pixels in an image.
-    black_pixels = white_pixels = 0
-    for pixel in image.getdata():
-        if pixel == (0, 0, 0):  # Black pixel
-            black_pixels += 1
-        elif pixel == (255, 255, 255):  # White pixel
-            white_pixels += 1
-    return black_pixels, white_pixels
+def is_dollar_amount(text):
+    pattern = r'^\$\d+(\.\d+)?$'
+    return re.match(pattern, text) is not None
 
-def has_images(page, threshold=100):
-    # Function to check if a page has images based on black and white pixel count.
-    image = page.get_pixmap()
-    img = Image.frombytes("RGB", (image.width, image.height), image.samples)
+# Test cases
+test_strings = ["$100", "$100.50", "Not a dollar amount", "$.50", "123"]
 
-    black_pixels, white_pixels = count_black_white_pixels(img)
-    return black_pixels + white_pixels > threshold
-
-def find_pages_with_images(pdf_file):
-    pdf_document = fitz.open(pdf_file)
-
-    pages_with_images = []
-    for page_num in range(pdf_document.page_count):
-        page = pdf_document.load_page(page_num)
-        if has_images(page):
-            pages_with_images.append(page_num + 1)
-
-    pdf_document.close()
-    return pages_with_images
-
-def process_directory(directory_path):
-    # Function to process all PDFs in a directory and find pages with images.
-    pdf_files = [f for f in os.listdir(directory_path) if f.endswith(".pdf")]
-
-    for pdf_file in pdf_files:
-        pdf_path = os.path.join(directory_path, pdf_file)
-        pages_with_images = find_pages_with_images(pdf_path)
-        print(f"File: {pdf_file} - Pages with images: {pages_with_images}")
-
-# Replace 'pdf_directory_path' with the path to the directory containing the PDFs.
-pdf_directory_path = "/path/to/your/pdf_directory"
-process_directory(pdf_directory_path)
+for test_string in test_strings:
+    if is_dollar_amount(test_string):
+        print(f"'{test_string}' is a dollar amount.")
+    else:
+        print(f"'{test_string}' is not a dollar amount.")
