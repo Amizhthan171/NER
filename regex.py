@@ -1,14 +1,23 @@
-import re
+import multiprocessing
 
-def is_dollar_amount(text):
-    pattern = r'^\$\d+(\.\d+)?$'
-    return re.match(pattern, text) is not None
+def worker():
+    result_df = ...  # Process your DataFrame and get the result_df
+    return result_df
 
-# Test cases
-test_strings = ["$100", "$100.50", "Not a dollar amount", "$.50", "123"]
+num_processes = 3
 
-for test_string in test_strings:
-    if is_dollar_amount(test_string):
-        print(f"'{test_string}' is a dollar amount.")
-    else:
-        print(f"'{test_string}' is not a dollar amount.")
+if __name__ == '__main__':
+    Processes = [multiprocessing.Process(target=worker) for _ in range(num_processes)]
+
+    results = []  # To store the returned DataFrames
+
+    for process in Processes:
+        process.start()
+
+    for process in Processes:
+        process.join()
+        result = process._target(*process._args, **process._kwargs)  # Get the return value
+        results.append(result)
+
+    # Now you have a list of DataFrames returned by each process
+    print("Results:", results)
