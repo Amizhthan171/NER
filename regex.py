@@ -1,23 +1,25 @@
-import multiprocessing
-^(?=.*\$)(?=.*[,\.])(?=.*\d).+$
-def worker():
-    result_df = ...  # Process your DataFrame and get the result_df
-    return result_df
+import json
+import pandas as pd
 
-num_processes = 3
+def flatten_json(json_obj, parent_key='', separator='_'):
+    items = {}
+    for key, value in json_obj.items():
+        new_key = f"{parent_key}{separator}{key}" if parent_key else key
+        if isinstance(value, dict):
+            items.update(flatten_json(value, new_key, separator))
+        else:
+            items[new_key] = value
+    return items
 
-if __name__ == '__main__':
-    Processes = [multiprocessing.Process(target=worker) for _ in range(num_processes)]
+# Load JSON data from a file or string
+with open('data.json', 'r') as json_file:
+    json_data = json.load(json_file)
 
-    results = []  # To store the returned DataFrames
+# Flatten JSON
+flattened_data = flatten_json(json_data)
 
-    for process in Processes:
-        process.start()
+# Create a DataFrame
+df = pd.DataFrame([flattened_data])
 
-    for process in Processes:
-        process.join()
-        result = process._target(*process._args, **process._kwargs)  # Get the return value
-        results.append(result)
-
-    # Now you have a list of DataFrames returned by each process
-    print("Results:", results)
+# Convert to CSV
+df.to_csv('output.csv', index=False)
